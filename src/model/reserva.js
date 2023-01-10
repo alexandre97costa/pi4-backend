@@ -1,32 +1,46 @@
 const { DataTypes } = require('sequelize')
-const sequelize = require('../config/Database')
 
-const Reserva = sequelize.define('reserva',
-    {
-        nome: {
-            type: DataTypes.STRING,
-            allowNull: false
+module.exports = (sequelize) => {
+    sequelize.define('reserva',
+        {
+            nome: {
+                type: DataTypes.STRING,
+                allowNull: false
+            },
+            num_pessoas: {
+                type: DataTypes.INTEGER,
+                allowNull: false
+            },
+            validado: {
+                type: DataTypes.BOOLEAN,
+                defaultValue: false
+            },
+            codigo_confirmacao: {
+                type: DataTypes.STRING(5),
+                allowNull: false
+            },
+            confirmado: {
+                type: DataTypes.BOOLEAN,
+                defaultValue: false
+            },
+            observacoes: DataTypes.STRING
         },
-        num_pessoas: {
-            type: DataTypes.INTEGER,
-            allowNull: false
-        },
-        validado: {
-            type: DataTypes.BOOLEAN,
-            allowNull: false
-        },
-        confirmado: {
-            type: DataTypes.BOOLEAN,
-            allowNull: false
-        },
-        observacoes: DataTypes.STRING
-    },
-    {
-        underscored: true, // passa de 'createdAt' para 'created_at'. O postgres agradece :)
-        freezeTableName: true, // não faz plurais nas relações com outras tabelas. Os devs agradecem :D
-        paranoid: true, // na prática, faz com que os records não sejam eliminados, mas sim escondidos (soft-delete) 
-        timestamps: true, // created_at, updated_at, e deleted_at
-    }
-)
+        {
+            name: { singular: 'reserva', plural: 'reservas' },
+            underscored: true, // passa de 'createdAt' para 'created_at'. O postgres agradece :)
+            freezeTableName: true, // não faz plurais nas relações com outras tabelas. Os devs agradecem :D
+            paranoid: true, // na prática, faz com que os records não sejam eliminados, mas sim escondidos (soft-delete) 
+            timestamps: true, // created_at, updated_at, e deleted_at
+            hooks: {
+                beforeCreate: record => {
+                    const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                    record.dataValues.codigo_confirmacao =
+                        characters.charAt(Math.floor(Math.random() * characters.length))
+                        + record.dataValues.id.slice(-4).padStart(4, '0')
 
-module.exports = Reserva
+                    // exemplo de resultado final: "F0345"
+                }
+            }
+        }
+    )
+}

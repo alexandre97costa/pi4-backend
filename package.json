@@ -2,9 +2,12 @@
   "name": "pi4-backend",
   "version": "0.0.0",
   "private": true,
+  "main":"src/app.js",
   "scripts": {
-    "start": "node src/app.js",
-    "dev": "nodemon --trace-warnings src/app.js"
+    "prestart": "npm i --silent",
+    "start": "set MODE=prod&& node src/app.js",
+    "predev": "npm i --silent",
+    "dev": "set MODE=dev&& nodemon -e yaml,js,json --trace-warnings "
   },
   "dependencies": {
     "bcrypt": "^5.0.1",
@@ -13,6 +16,8 @@
     "debug": "~2.6.9",
     "dotenv": "^16.0.2",
     "express": "~4.16.1",
+    "express-interceptor": "^1.2.0",
+    "express-jwt": "^7.7.7",
     "http-errors": "~1.6.3",
     "jsonwebtoken": "^8.5.1",
     "nodemailer": "^6.7.8",
