@@ -6,7 +6,7 @@ const { expressjwt: validate_jwt } = require('express-jwt');
 const app = express()
 app.set('port', process.env.PORT || 4001)
 const port = app.get('port')
-const sequelize = require('./config/database')
+const sequelize = require('./config/Database')
 sequelize.sync(
     { alter: true }
 )
