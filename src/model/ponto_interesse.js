@@ -17,21 +17,21 @@ module.exports = (sequelize) => {
                 validate: {
                     is: {
                         args: /^[0-9]{4}-[0-9]{3}$/i, // regex codigo postal (4 numeros + hiphen + 3 numeros)
-                        msg: 'o valor inserido não corresponde ao padrão xxxx-xxx'
+                        msg: 'o codigo-postal inserido não corresponde ao padrão xxxx-xxx'
                     }
                 }
             },
-            num_telemovel: {
+            telemovel: {
                 type: DataTypes.STRING(50),
                 allowNull: false,
                 validate: {
                     is: {
                         args: /^[0-9]{9}$/i, // regex nº tlm (9 numeros)
-                        msg: 'o valor inserido não tem 9 números'
+                        msg: 'o telemovel inserido não tem 9 números'
                     }
                 }
             },
-            num_pontos: {
+            pontos: {
                 type: DataTypes.INTEGER,
                 allowNull: false
             },
@@ -77,6 +77,20 @@ module.exports = (sequelize) => {
                             console.log(output)
                         })
                         .catch(error => { console.log(error) })
+                },
+                afterDestroy: async (pi, options) => {
+
+                    await sequelize.models.ponto_interesse_recompensa
+                        .destroy({ where: { ponto_interesse_id: pi.id } })
+
+                    await sequelize.models.imagem
+                        .destroy({ where: { ponto_interesse_id: pi.id } })
+
+                    await sequelize.models.comentario_avaliacao
+                        .destroy({ where: { ponto_interesse_id: pi.id } })
+
+                    await sequelize.models.evento
+                        .destroy({ where: { ponto_interesse_id: pi.id } })
                 }
             }
         }

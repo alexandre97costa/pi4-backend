@@ -29,9 +29,14 @@ module.exports = (sequelize) => {
                 allowNull: false,
                 validate: {
                     notNull: { msg: 'A password não pode estar vazia.' },
-                    len: {
-                        args: [6, 30],
-                        msg: 'A password tem que conter entre 6 e 30 caracteres.'
+                    notEmpty: { msg: 'A password não pode estar vazia.' },
+                    min: {
+                        args: [6],
+                        msg: 'A password precisa de ter no minimo 6 carateres'
+                    },
+                    is: {
+                        args: ['^[A-Za-zÀ-ÖØ-öø-ÿ\\.\\/\\d\\w@$!%*#?&]{6,}$'],
+                        msg: 'A password precisa de ter letras, numeros, e um dos carateres especiais: _ @ $ ! % * # ? &.'
                     }
                 }
             },
@@ -42,8 +47,19 @@ module.exports = (sequelize) => {
                     notNull: { msg: 'A data de nascimento não pode estar vazia.' },
                     isDate: { msg: 'A data de nascimento inserida não é valida.' },
                     isBefore: {
-                        args: new Date(new Date().setFullYear(new Date().getFullYear() -13)).toString(),
+                        args: new Date(new Date().setFullYear(new Date().getFullYear() - 13)).toString(),
                         msg: 'Precisa de ter mais de 13 anos para se resgistar.'
+                    }
+                }
+            },
+            pontos: {
+                type: DataTypes.INTEGER,
+                allowNull: false,
+                defaultValue: 0,
+                validate: {
+                    min: {
+                        args: -1,
+                        msg: 'Os pontos não podem ser negativos.'
                     }
                 }
             }
@@ -65,13 +81,36 @@ module.exports = (sequelize) => {
                             })
                             .join(' ');
 
-                    // por defeito, todos os users começam como visitante
-                    utilizador.tipo_utilizador_id = 1
-
                     // encriptar password
                     return bcrypt.hash(utilizador.password, 10)
                         .then(hash => { utilizador.password = hash; })
                         .catch(err => { throw new Error(err); });
+                },
+                beforeUpdate: (utilizador) => {
+                    // se no update foi mudada a passe, é preciso encriptá-la
+                    if (utilizador.previous().hasOwnProperty('password')) {
+                        return bcrypt.hash(utilizador.password, 10)
+                            .then(hash => { 
+                                utilizador.password = hash; 
+                                console.log('nova: ', utilizador.password)
+                            })
+                            .catch(err => { throw new Error(err); });
+                    }
+                },
+                afterDestroy: async (utilizador) => {
+
+                    await sequelize.models.reserva
+                        .destroy({ where: { visitante_id: utilizador.id } })
+
+                    await sequelize.models.comentario_avaliacao
+                        .destroy({ where: { visitante_id: utilizador.id } })
+
+                    await sequelize.models.scan_evento
+                        .destroy({ where: { visitante_id: utilizador.id } })
+
+                    await sequelize.models.scan_ponto_interesse
+                        .destroy({ where: { visitante_id: utilizador.id } })
+
                 }
             }
         }

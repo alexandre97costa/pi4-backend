@@ -11,19 +11,19 @@ module.exports = (sequelize) => {
                 type: DataTypes.STRING,
                 allowNull: false
             },
-            num_pontos: {
+            pontos: {
                 type: DataTypes.INTEGER,
                 allowNull: false
             },
-            num_vagas: {
+            lotacao: {
                 type: DataTypes.INTEGER,
                 defaultValue: 0,
                 allowNull: false
             },
-            // num_horas: quantas horas demora o evento.
+            // horas_duracao: quantas horas demora o evento.
             // É usado juntamente com a data/hora das sessoes
             // para determinar se um scan a este evento é válido
-            num_horas: { 
+            horas_duracao: { 
                 type: DataTypes.INTEGER,
                 defaultValue: 1,
                 allowNull: false
@@ -40,12 +40,11 @@ module.exports = (sequelize) => {
             paranoid: true, // na prática, faz com que os records não sejam eliminados, mas sim escondidos (soft-delete) 
             timestamps: true, // created_at, updated_at, e deleted_at
             hooks: {
-                afterCreate: async (item, index) => {
-                    console.log(item)
-                    console.log("----------------")
-                    console.log(index)
-                    console.log("----------------")
-                    console.log(sequelize)
+                afterDestroy: async (evento, options) => {
+
+                    await sequelize.models.sessao
+                        .destroy({ where: { evento_id: evento.id } })
+                        .then(output => console.log(output)) // envia o numero de instances eliminadas
                 }
             }
         }
