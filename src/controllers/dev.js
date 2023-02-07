@@ -1,5 +1,5 @@
 
-var sequelize = require('../config/Database')
+var sequelize = require('../config/database')
 const utilizadorController = require('./utilizador.js')
 const bulk_users = require('../_dev/request bodies/create_user_in_bulk.json')
 const { dev: devClass } = require('../_dev/dev')
